@@ -3,7 +3,7 @@ Description: Cloud9 IDE Environment for a Developer/Engineer
 Parameters:
   UserName:
     Type: String
-    Description: Email prefix for associated Vodafone Identity (with optional trailing digit if applicable)
+    Description: Email prefix for associated Identity (with optional trailing digit if applicable)
     ConstraintDescription: firstName.lastName
   AssumedRole:
     Type: String
@@ -37,12 +37,14 @@ Conditions:
     !Equals ["true", !Ref SpecialUserName]
   IfNotSpecialUserName:
     !Not [Condition: IfSpecialUserName]
+
+#customize ownerARN with email provider
 Resources:
   Environment:
     Type: 'AWS::Cloud9::EnvironmentEC2'
     Condition: IfNotSpecialUserName
     Properties:
-      OwnerArn: !Sub "arn:aws:sts::${AWS::AccountId}:assumed-role/${AssumedRole}/${UserName}@vodafone.com"
+      OwnerArn: !Sub "arn:aws:sts::${AWS::AccountId}:assumed-role/${AssumedRole}/${UserName}@gmail.com"
       Description: !Ref Description
       AutomaticStopTimeMinutes: !Ref AutomaticStopTimeMinutes
       InstanceType: !Ref InstanceType
