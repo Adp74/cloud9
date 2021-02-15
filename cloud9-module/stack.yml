@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Cloud9 IDE Environment for a Developer/Engineer
+Parameters:
+  UserName:
+    Type: String
+    Description: Email prefix for associated Vodafone Identity (with optional trailing digit if applicable)
+    ConstraintDescription: firstName.lastName
+  AssumedRole:
+    Type: String
+    Description: Role name
+  Description:
+    Type: String
+    Description: Environment Description
+    Default: Cloud Development IDE
+  AutomaticStopTimeMinutes:
+    Type: String
+    Description: Instance Shutdown After this Minutes of Inactivity
+    Default: 60
+  InstanceType:
+    Type: String
+    Description: Environment Instance Type
+    Default: t2.micro
+  SubnetId:
+    Type: 'AWS::EC2::Subnet::Id'
+    Description: Public subnet in Cloud9 deployment VPC
+  SpecialUserName: 
+    Description: Whether I should create a resource.
+    Default: "false"
+    Type: String
+    AllowedValues: ["true", "false"]
+  SpecialUserEmail: 
+    Description: Email
+    Default: " "
+    Type: String
+Conditions:
+  IfSpecialUserName:
+    !Equals ["true", !Ref SpecialUserName]
+  IfNotSpecialUserName:
+    !Not [Condition: IfSpecialUserName]
+Resources:
+  Environment:
+    Type: 'AWS::Cloud9::EnvironmentEC2'
+    Condition: IfNotSpecialUserName
+    Properties:
+      OwnerArn: !Sub "arn:aws:sts::${AWS::AccountId}:assumed-role/${AssumedRole}/${UserName}@vodafone.com"
+      Description: !Ref Description
+      AutomaticStopTimeMinutes: !Ref AutomaticStopTimeMinutes
+      InstanceType: !Ref InstanceType
+      Name: !Sub "${UserName}-${AssumedRole}-cloud9"
+      SubnetId: !Ref SubnetId
+      Tags: 
+      - 
+        Key: "Environment"
+        Value: "PROD"
+      - 
+        Key: "Project"
+        Value: "X"
+      - 
+        Key: "ManagedBy"
+        Value: "X"
+
+  
+  SpecialCharacterEnvironment:
+    Type: 'AWS::Cloud9::EnvironmentEC2'
+    Condition: IfSpecialUserName
+    Properties:
+      OwnerArn: !Sub "arn:aws:sts::${AWS::AccountId}:assumed-role/${AssumedRole}/${SpecialUserEmail}"
+      Description: !Ref Description
+      AutomaticStopTimeMinutes: !Ref AutomaticStopTimeMinutes
+      InstanceType: !Ref InstanceType
+      Name: !Sub "${UserName}-${AssumedRole}-cloud9"
+      SubnetId: !Ref SubnetId
+      Tags: 
+      - 
+        Key: "Environment"
+        Value: "PROD"
+      - 
+        Key: "Project"
+        Value: "X"
+      - 
+        Key: "ManagedBy"
+        Value: "X"
